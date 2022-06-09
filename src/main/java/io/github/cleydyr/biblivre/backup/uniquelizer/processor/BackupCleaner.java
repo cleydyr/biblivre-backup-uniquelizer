@@ -77,7 +77,7 @@ public class BackupCleaner {
                 .forEach(this::overwriteWithLines);
     }
 
-    private String generateFileName(String fileName) {
+    public String generateFileName(String fileName) {
         return fileName + "-" + System.currentTimeMillis() + "-cleaned.b5bz";
     }
 
@@ -97,48 +97,10 @@ public class BackupCleaner {
 
             State state = new State();
 
-            bufferedReader
+            return bufferedReader
                     .lines()
-                    .forEach(
-                            line -> {
-                                if (state.isOnCopy) {
-                                    if (COPY_END.equals(line)) {
-                                        state.isOnCopy = false;
-
-                                        state.uniqueIds = null;
-
-                                        lines.add(line);
-                                    } else {
-                                        int lastIndexOfSpace = line.indexOf(TAB);
-
-                                        String id = line.substring(0, lastIndexOfSpace);
-
-                                        if (state.uniqueIds.contains(id)) {
-                                            System.out.println(
-                                                    "duplicated content at line "
-                                                            + state.lineCount
-                                                            + " of file "
-                                                            + dataPath.getFileName());
-
-                                            System.out.println(line);
-                                        } else {
-                                            state.uniqueIds.add(id);
-
-                                            lines.add(line);
-                                        }
-                                    }
-                                } else {
-                                    if (line.startsWith(COPY_BEGIN) && hasUniqueIDTable(line)) {
-                                        state.isOnCopy = true;
-
-                                        state.uniqueIds = new HashSet<>();
-                                    }
-
-                                    lines.add(line);
-                                }
-
-                                state.lineCount++;
-                            });
+                    .filter(line -> processLine(line, state))
+                    .collect(Collectors.toList());
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -146,7 +108,37 @@ public class BackupCleaner {
         return lines;
     }
 
-    private boolean hasUniqueIDTable(String copyLine) {
+    public boolean processLine(String line, State state) {
+        if (state.isOnCopy) {
+            if (COPY_END.equals(line)) {
+                state.isOnCopy = false;
+
+                state.uniqueIds = null;
+            } else {
+                int lastIndexOfSpace = line.indexOf(TAB);
+
+                String id = line.substring(0, lastIndexOfSpace);
+
+                if (state.uniqueIds.contains(id)) {
+                    return false;
+                } else {
+                    state.uniqueIds.add(id);
+                }
+            }
+        } else {
+            if (line.startsWith(COPY_BEGIN) && hasUniqueIDTable(line)) {
+                state.isOnCopy = true;
+
+                state.uniqueIds = new HashSet<>();
+            }
+        }
+
+        state.lineCount++;
+
+        return true;
+    }
+
+    public boolean hasUniqueIDTable(String copyLine) {
         String[] parts = copyLine.split(SPACE, 3);
 
         String tableName = parts[1];
@@ -154,7 +146,7 @@ public class BackupCleaner {
         return Arrays.stream(UNIQUE_ID_TABLES).anyMatch(tableName::equals);
     }
 
-    class State {
+    public class State {
         int lineCount = 1;
 
         boolean isOnCopy;
