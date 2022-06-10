@@ -28,9 +28,15 @@ public class CleanCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         logger.info("Cleaning file " + file);
 
-        backupCleaner.processFile(file);
+        try {
+            backupCleaner.processFile(file);
 
-        return 0;
+            return 0;
+        } catch (Exception exception) {
+            logger.error("Can't process file " + file, exception);
+
+            return 1;
+        }
     }
 
     // this example implements Callable, so parsing, error handling and handling user
