@@ -13,13 +13,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import io.github.cleydyr.biblivre.backup.uniquelizer.command.CleanCommand;
 
 @Component
 public class BackupCleaner {
@@ -64,11 +61,10 @@ public class BackupCleaner {
     private static final String COPY_END = "\\.";
     private static final Logger logger = LoggerFactory.getLogger(BackupCleaner.class);
 
-    @Autowired
-    private ZipOperations zipOperations;
+    @Autowired private ZipOperations zipOperations;
 
     public void processFile(File backup) throws IOException {
-    	logger.info("Create temporary directory...");
+        logger.info("Create temporary directory...");
 
         Path explodedBackupPath = Files.createTempDirectory("uniquelizer");
 
