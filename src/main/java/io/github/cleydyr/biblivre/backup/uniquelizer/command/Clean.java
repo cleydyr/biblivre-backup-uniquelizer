@@ -3,6 +3,7 @@ package io.github.cleydyr.biblivre.backup.uniquelizer.command;
 import io.github.cleydyr.biblivre.backup.uniquelizer.processor.BackupCleaner;
 import java.io.File;
 import java.util.concurrent.Callable;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -20,6 +21,7 @@ class Cleaner implements Callable<Integer> {
     public Integer call() throws Exception {
         BackupCleaner backupCleaner = new BackupCleaner();
 
+        System.out.println("Cleaning file " + file);
         backupCleaner.processFile(file);
 
         return 0;
